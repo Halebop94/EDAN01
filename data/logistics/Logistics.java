@@ -4,6 +4,7 @@ import org.jacop.search.*;
 import org.jacop.constraints.Constraint;
 import org.jacop.constraints.netflow.*;
 import org.jacop.constraints.netflow.simplex.*;
+import java.util.Arrays;
 
 public class Logistics{
   int graph_size = 6;
@@ -28,8 +29,8 @@ public class Logistics{
     IntVar[] x = new IntVar[8];
 
     NetworkBuilder net = new NetworkBuilder();
-    Node source = net.addNode("source", 5); //Node 1
-    Node sink = net.addNode("sink", -5); //Node 6
+    Node source = net.addNode("source", 1); //Node 1
+    Node sink = net.addNode("sink", -1); //Node 6
 
     Node A = net.addNode("A", 0);
     Node B = net.addNode("B", 0);
@@ -46,7 +47,7 @@ public class Logistics{
     x[4] = new IntVar(store, "c->b", 0, 5);
     x[5] = new IntVar(store, "c->d", 0, 5);
     net.addArc(A, B, 3, x[2]);
-    net.addArc(A, D, 2, x[3]);
+    net.addArc(A, D, 3, x[3]);
     net.addArc(C, B, 5, x[4]);
     net.addArc(C, D, 6, x[5]);
 
@@ -59,6 +60,28 @@ public class Logistics{
     net.setCostVariable(cost);
 
     store.impose(new NetworkFlow(net));
+
+    Arc[] arcs = new Arc[1];
+      arcs[0] = net.addArc(source, B, 0, x[1]);
+
+      IntVar s = new IntVar(store, "s", 0, 1);
+      Domain[] domCond = new IntDomain[1];
+      domCond[0] = new IntervalDomain(0, 0);
+
+      net.handlerList.add(new DomainStructure(s,
+                          Arrays.asList(domCond),
+                          Arrays.asList(arcs)));
+
+
+   Search<IntVar> label = new DepthFirstSearch<IntVar>();
+      SelectChoicePoint<IntVar> select = new SimpleSelect<IntVar>(x,
+                                          new SmallestDomain<IntVar>(),
+                                          new IndomainMin<IntVar>());
+      boolean result = label.labeling(store, select, cost);
+
+
+    System.out.println(result);
+
   }
 
 }
