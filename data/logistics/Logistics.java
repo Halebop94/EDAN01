@@ -58,6 +58,4 @@ public class Logistics{
 
     store.impose(new NetworkFlow(net));
   }
-
-  }
 }
