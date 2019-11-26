@@ -1,6 +1,10 @@
-import org.jacop.conatraints.*;
+import javax.swing.SpringLayout.Constraints;
+
+import org.jacop.constraints.*;
 import org.jacop.core.*;
 import org.jacop.search.*;
+import org.jacop.constraints.netflow.*;
+import org.jacop.constraints.netflow.simplex.*;
 
 public class Logistics{
   int graph_size = 6;
@@ -15,12 +19,11 @@ public class Logistics{
 
   public static void main(String[] args) {
 
-    Logistics log = new Logistics();
-    log.route();
+  route();
   }
 
 
-  public void route(){
+  public static void route(){
     Store store = new Store();
 
     IntVar[] x = new IntVar[8];
