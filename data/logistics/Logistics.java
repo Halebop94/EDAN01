@@ -1,10 +1,10 @@
-import javax.swing.SpringLayout.Constraints;
-
 import org.jacop.constraints.*;
 import org.jacop.core.*;
 import org.jacop.search.*;
+import org.jacop.constraints.Constraint;
 import org.jacop.constraints.netflow.*;
 import org.jacop.constraints.netflow.simplex.*;
+import java.util.Arrays;
 
 public class Logistics{
   int graph_size = 6;
@@ -19,46 +19,69 @@ public class Logistics{
 
   public static void main(String[] args) {
 
-  route();
+    Logistics l = new Logistics();
+  l.route();
   }
 
 
-  public static void route(){
+  public void route(){
     Store store = new Store();
 
-    IntVar[] x = new IntVar[8];
+    IntVar[] x = new IntVar[n_edges+2];
 
     NetworkBuilder net = new NetworkBuilder();
-    Node source = net.addNode("source", 5); //Node 1
-    Node sink = net.addNode("sink", -5); //Node 6
+    Node source = net.addNode("source", n_dests); //Node 1
+    Node sink = net.addNode("sink", -1); //Node 6
 
-    Node A = net.addNode("A", 0);
-    Node B = net.addNode("B", 0);
-    Node C = net.addNode("C", 0);
-    Node D = net.addNode("D", 0);
+    Node[] nodes = new Node[graph_size];
+    for(int i = 0; i<graph_size; i++){
+        nodes[i] = net.addNode(Integer.toString(i), 0);
+    }
 
-    x[0] = new IntVar(store, "x_0", 0, 5);
-    x[1] = new IntVar(store, "x_1", 0, 5);
-    net.addArc(source, A, 0, x[0]);
-    net.addArc(source, C, 0, x[1]);
+    x[0] = new IntVar(store, "source ->" + Integer.toString(start), 0, n_dests);
+    net.addArc(source, nodes[start-1], 0, x[0]);
 
-    x[2] = new IntVar(store, "a->b", 0, 5);
-    x[3] = new IntVar(store, "a->d", 0, 5);
-    x[4] = new IntVar(store, "c->b", 0, 5);
-    x[5] = new IntVar(store, "c->d", 0, 5);
-    net.addArc(A, B, 3, x[2]);
-    net.addArc(A, D, 2, x[3]);
-    net.addArc(C, B, 5, x[4]);
-    net.addArc(C, D, 6, x[5]);
 
-    x[6] = new IntVar(store, "x_6", 0, 5);
-    x[7] = new IntVar(store, "x_7", 0, 5);
-    net.addArc(B, sink, 0, x[6]);
-    net.addArc(D, sink, 0, x[7]);
+    for(int i = 0; i<n_edges;i++) {
+      System.out.println(from[i]);
+      System.out.println(to[i]);
+      x[i+1] = new IntVar(store, Integer.toString(from[i]) + " -> " + Integer.toString(to[i]), 0, n_dests);
+      net.addArc(nodes[from[i]-1], nodes[to[i]-1], cost[i], x[i+1]);
+    }
 
-    IntVar cost = new IntVar(store, "cost", 0, 1000);
+      x[n_edges+1] = new IntVar(store, Integer.toString(dest[0]) + " -> sink", 0, n_dests);
+      net.addArc(nodes[dest[0]-1], sink, 0, 1);
+
+
+
+    IntVar cost = new IntVar(store, "cost", 0, 26);
     net.setCostVariable(cost);
 
     store.impose(new NetworkFlow(net));
+
+    Arc[] arcs = new Arc[1];
+      arcs[0] = net.addArc(source, nodes[0], 0, x[0]);
+
+      IntVar s = new IntVar(store, "s", 0, 1);
+      Domain[] domCond = new IntDomain[1];
+      domCond[0] = new IntervalDomain(0, 0);
+
+      net.handlerList.add(new DomainStructure(s,
+                          Arrays.asList(domCond),
+                          Arrays.asList(arcs)));
+
+
+   Search<IntVar> label = new DepthFirstSearch<IntVar>();
+      SelectChoicePoint<IntVar> select = new SimpleSelect<IntVar>(x,
+                                          null,
+                                          new IndomainMin<IntVar>());
+
+
+      boolean result = label.labeling(store, select, cost);
+
+
+    System.out.println(result);
+
   }
+
 }
