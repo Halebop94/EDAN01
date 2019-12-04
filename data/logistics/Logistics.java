@@ -99,21 +99,6 @@ public class Logistics{
 
     net.setCostVariable(cost1);
 
-    store.impose(new NetworkFlow(net));
-
-
-    // Arc[] arcs = new Arc[1];
-    //   arcs[0] = net.addArc(source, nodes[0], 0, x[0]);
-    //
-    //   IntVar s = new IntVar(store, "s", 0, 1);
-    //   Domain[] domCond = new IntDomain[1];
-    //   domCond[0] = new IntervalDomain(0, 0);
-    //
-    //   net.handlerList.add(new DomainStructure(s,
-    //                       Arrays.asList(domCond),
-    //                       Arrays.asList(arcs)));
-
-
    Search<IntVar> label = new DepthFirstSearch<IntVar>();
 
       SelectChoicePoint<IntVar> select = new SimpleSelect<IntVar>(x,
