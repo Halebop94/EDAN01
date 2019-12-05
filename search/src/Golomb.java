@@ -178,6 +178,4 @@ public class Golomb {
 	System.out.println (result);
 
     }
-	
-	
 }
