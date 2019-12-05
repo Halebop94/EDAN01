@@ -37,6 +37,9 @@
   import org.jacop.core.IntVar;
   import org.jacop.core.Store;
 
+  import java.util.HashSet;
+  import java.util.Set;
+
   /**
    * Implements Simple Depth First Search .
    *
@@ -47,6 +50,9 @@
   public class SimpleDFS  {
 
       boolean trace = false;
+
+      int wrong = 0;
+      Set nbrNodes = new HashSet<Integer>();
 
       /**
        * Store used in search
@@ -107,8 +113,10 @@
 
   	    consistent = store.consistency();
 
+
   	    if (!consistent) {
   	       // Failed leaf of the search tree
+			wrong++;
   	        return false;
   	    } else { // consistent
 
@@ -140,7 +148,6 @@
   	    } else {
 
   		      restoreLevel();
-
   		      store.impose(new Not(choice.getConstraint()));
 
   		        // negated choice point imposed.
@@ -175,6 +182,9 @@
       public void reportSolution() {
   	if (costVariable != null)
   	    System.out.println ("Cost is " + costVariable);
+		  System.out.println ("number of nodes: " + nbrNodes.size());
+
+		  System.out.println(wrong + " wrong dec");
 
   	for (int i = 0; i < variablesToReport.length; i++)
   	    System.out.print (variablesToReport[i] + " ");
@@ -228,6 +238,7 @@
   	 * example value selection; indomain_min
   	 */
   	int selectValue(IntVar v) {
+  		nbrNodes.add(v.min());
   	    return v.min();
   	}
 
