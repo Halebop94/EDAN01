@@ -53,7 +53,7 @@ public class SplitSearch1  {
     boolean trace = false;
     int count = 0;
     int wrong = 0;
-    Set nbrNodes = new HashSet<Integer>();
+    int index = 0;
 
     /**
      * Store used in search
@@ -91,7 +91,7 @@ public class SplitSearch1  {
     public boolean label(IntVar[] vars) {
 
 
-        System.out.println("ct " + vars.length);
+        //System.out.println("ct " + vars.length);
         count++;
         if (trace) {
             for (int i = 0; i < vars.length; i++)
@@ -119,7 +119,6 @@ public class SplitSearch1  {
 
         if (!consistent) {
             // Failed leaf of the search tree
-            wrong++;
             return false;
         } else { // consistent
 
@@ -182,13 +181,15 @@ public class SplitSearch1  {
     void restoreLevel() {
         store.removeLevel(depth);
         store.setLevel(store.level);
+        wrong++;
+
     }
 
     public void reportSolution() {
 
         if (costVariable != null)
             System.out.println ("Cost is " + costVariable);
-        System.out.println ("number of nodes: " + nbrNodes.size());
+        System.out.println ("number of nodes: " + count);
 
         System.out.println(wrong + " wrong dec");
 
@@ -226,17 +227,35 @@ public class SplitSearch1  {
          * example variable selection; input order
          */
         IntVar selectVariable(IntVar[] v) {
-            if (v.length != 0) {
-                prev = v[0];
 
-                searchVariables = new IntVar[v.length];
-                for (int i = 0; i < v.length-1; i++) {
-                    searchVariables[i] = v[i+1];
+            if (v.length != 0) {
+                int index = 0;
+                int smallestDomain = Integer.MAX_VALUE;
+                for(int i = 0; i< v.length-1; i++){
+                    if(v[i].domain.getSize()<smallestDomain){
+                        index = i;
+                        smallestDomain = v[i].domain.getSize();
+                    }
+
                 }
-                if(prev!=null){
-                    searchVariables[v.length-1] = prev;
+                if(v[index].min() == v[index].max()){
+
+                    searchVariables = new IntVar[v.length-1];
+                    for (int i = 0; i < v.length-1; i++) {
+                        if(i<index){
+                            searchVariables[i] = v[i];
+                        }
+                        else searchVariables[i] = v[i+1];
+
+                    }
                 }
-                return v[0];
+                else{
+                    searchVariables = new IntVar[v.length];
+                    for(int i = 0; i < v.length; i++){
+                        searchVariables[i] = v[i];
+                    }
+                }
+                return v[index];
 
             }
             else {
