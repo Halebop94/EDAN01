@@ -1,3 +1,34 @@
+/**
+ *  SimpleDFS.java
+ *  This file is part of JaCoP.
+ *
+ *  JaCoP is a Java Constraint Programming solver.
+ *
+ *	Copyright (C) 2000-2008 Krzysztof Kuchcinski and Radoslaw Szymanek
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  Notwithstanding any other provision of this License, the copyright
+ *  owners of this work supplement the terms of this License with terms
+ *  prohibiting misrepresentation of the origin of this work and requiring
+ *  that modified versions of this work be marked in reasonable ways as
+ *  different from the original version. This supplement of the license
+ *  terms is in accordance with Section 7 of GNU Affero General Public
+ *  License version 3.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 import org.jacop.constraints.Not;
 import org.jacop.constraints.PrimitiveConstraint;
 import org.jacop.constraints.XeqC;
@@ -7,10 +38,22 @@ import org.jacop.core.IntDomain;
 import org.jacop.core.IntVar;
 import org.jacop.core.Store;
 
-public class SplitSearch1 {
+import java.util.HashSet;
+import java.util.Set;
 
+/**
+ * Implements Simple Depth First Search .
+ *
+ * @author Krzysztof Kuchcinski
+ * @version 4.1
+ */
+
+public class SplitSearch1  {
 
     boolean trace = false;
+    int count = 0;
+    int wrong = 0;
+    Set nbrNodes = new HashSet<Integer>();
 
     /**
      * Store used in search
@@ -47,13 +90,16 @@ public class SplitSearch1 {
      */
     public boolean label(IntVar[] vars) {
 
+
+        System.out.println("ct " + vars.length);
+        count++;
         if (trace) {
             for (int i = 0; i < vars.length; i++)
                 System.out.print (vars[i] + " ");
             System.out.println ();
         }
 
-        SplitSearch1.ChoicePoint choice = null;
+        ChoicePoint choice = null;
         boolean consistent;
 
         // Instead of imposing constraint just restrict bounds
@@ -73,6 +119,7 @@ public class SplitSearch1 {
 
         if (!consistent) {
             // Failed leaf of the search tree
+            wrong++;
             return false;
         } else { // consistent
 
@@ -88,7 +135,7 @@ public class SplitSearch1 {
                 return costVariable == null; // true is satisfiability search and false if minimization
             }
 
-            choice = new SplitSearch1.ChoicePoint(vars);
+            choice = new ChoicePoint(vars);
 
             levelUp();
 
@@ -104,8 +151,9 @@ public class SplitSearch1 {
             } else {
 
                 restoreLevel();
-
                 store.impose(new Not(choice.getConstraint()));
+
+
 
                 // negated choice point imposed.
 
@@ -137,8 +185,12 @@ public class SplitSearch1 {
     }
 
     public void reportSolution() {
+
         if (costVariable != null)
             System.out.println ("Cost is " + costVariable);
+        System.out.println ("number of nodes: " + nbrNodes.size());
+
+        System.out.println(wrong + " wrong dec");
 
         for (int i = 0; i < variablesToReport.length; i++)
             System.out.print (variablesToReport[i] + " ");
@@ -152,6 +204,8 @@ public class SplitSearch1 {
     public void setCostVariable(IntVar v) {
         costVariable = v;
     }
+
+    IntVar prev;
 
     public class ChoicePoint {
 
@@ -173,12 +227,15 @@ public class SplitSearch1 {
          */
         IntVar selectVariable(IntVar[] v) {
             if (v.length != 0) {
+                prev = v[0];
 
-                searchVariables = new IntVar[v.length-1];
+                searchVariables = new IntVar[v.length];
                 for (int i = 0; i < v.length-1; i++) {
                     searchVariables[i] = v[i+1];
                 }
-
+                if(prev!=null){
+                    searchVariables[v.length-1] = prev;
+                }
                 return v[0];
 
             }
@@ -203,8 +260,4 @@ public class SplitSearch1 {
             return new XlteqC(var, value);
         }
     }
-
-
-
-
 }
