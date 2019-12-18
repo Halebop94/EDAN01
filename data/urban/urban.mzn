@@ -3,14 +3,18 @@ int:n;
 int:n_commercial;
 int:n_residential;
 array[0..n] of int :point_distribution;
-
-int: n_resi;
-var 0..100: cost;
+var -400..400: cost;
 array[1..n, 1..n] of var 0..1: grid;
-cost = sum(i in 1..n)(forall(index in 1..n)(
-        
-            grid[index,i]
-         
-          )
+
+
+array[1..n] of var 0..n : rows = sum(i, j in 1..n)(
+  1
 );
 
+cost = sum(i,j in 1..n)(
+                    grid[i,j] +
+                   point_distribution[i] +
+                   point_distribution[j]
+        );
+
+constraint sum(i,j in 1..n)(grid[i, j]) == n_residential;
