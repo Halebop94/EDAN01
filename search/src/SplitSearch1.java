@@ -170,8 +170,6 @@ public class SplitSearch1  {
         costVariable = v;
     }
 
-    IntVar prev;
-
     public class ChoicePoint {
 
         IntVar var;
